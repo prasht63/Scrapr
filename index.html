@@ -1,0 +1,117 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Scrapr | Hassle Free Collaborative Editing!</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        
+      
+        <link rel="stylesheet" href="/css/bootstrap-theme.css">
+		<link rel="stylesheet" href="/css/bootstrap.css">
+        <link rel="stylesheet" href="/css/main.css">
+		<style>
+            body
+			{
+                padding-top: 50px;
+                padding-bottom: 20px;
+				background-image: url("/img/background.png");
+				opacity:0.7;
+            }
+			
+        </style>
+        <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+    </head>
+    <body>
+    <nav class="navbar navbar-default navbar-fixed-top"  role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+		  <a class="navbar-brand" href="#"><img src="img/brand.png" width="25px" height="25px"/></a>
+          <a class="navbar-brand" href="#">Scrapr </a>
+        </div>
+      </div>
+    </nav>
+    <div class="container" style="padding:5px;">
+      <h2 id="announcement">Scrapr is here to help you share docs with your friends</h2></center>
+	  
+	  <li><h5 id="features">A Open Space on the web to share your ideas,discussions with just a link to pass on.</h5></li>
+	  <li><h5 id="features">No SignUp required! We hate taking too much data from the user just as much the user does ;)</h5></li>
+	  <li><h5 id="features">Its Free and will always be!</h5></li>
+	  <center><a href="#newdoc"><button class="button" id="bigbutton" type="submit" onclick=document.getElementById("namescrap").focus() >Start! </button></a>
+	  
+    </div>
+	
+    </div> <!-- /container -->    
+	
+
+<div id="newdoc" class="modalDialog">
+	<div>
+		<div class="form">
+		<h2 class="title">Start your own Scrap!</h2>
+        <input class="userInput" id="namescrap" type="text" maxlength="14" placeholder="Name your Scrap!" />
+		<button class="button" id="scrapit" type="submit" >Scrap It! </button>
+		<p id="error"></p> 
+		</div>
+
+	</div>
+</div>
+	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
+    <script>
+	 
+
+	  var data={
+			docname:"",
+			doctext:"",
+			users:[],
+			cursor:[],
+			numberofusers:0
+	       };
+		   
+      var socket = io();
+	  
+	  //on click of Start button
+      $("#scrapit").click(function()
+	  {
+		 data.docname=$('#namescrap').val();
+		 data.docname = data.docname.replace(/\s/g, '');
+		 if(data.docname=="")
+		 {
+			$("#error").html("Please enter a valid name.");
+		 }
+		 else
+		 {
+			var socket = io.connect();
+			socket.emit('create', data);
+		 }
+		 
+      });
+	  
+	  //checking for name availability a
+	  socket.on('createfeedback', function(data)
+	  {
+		if(data==0)
+		{
+			$("#error").html("Doc with this name exists.Please create a new doc");
+		}
+		else if(data==404)
+		{
+			$("#error").html("Connection error with database.Please try again");
+		}
+		else 
+		{
+			$(location).attr('href','/doc/'+data.docname);
+		}
+	 });
+	  
+    </script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+
+    <script src="js/vendor/bootstrap.min.js"></script>
+	<script src="js/main.js"></script>
+    </body>
+</html>

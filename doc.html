@@ -1,0 +1,190 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Scrapr | A test collaborative Editor</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        
+      
+        <link rel="stylesheet" href="/css/bootstrap-theme.css">
+		<link rel="stylesheet" href="/css/bootstrap.css">
+        <link rel="stylesheet" href="/css/main.css">
+		<style>
+            body
+			{
+                padding-top: 50px;
+                padding-bottom: 20px;
+				background-image: url("/img/background.png");
+				opacity:0.7;
+				
+            }
+			
+        </style>
+        <script src="/js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+    </head>
+    <body>
+    <nav class="navbar navbar-default navbar-fixed-top"  role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+		  <a class="navbar-brand" href="#"><img src="/img/brand.png" width="25px" height="25px"/></a>
+          <a class="navbar-brand" href="#">Scrapr </a>
+        </div>
+      </div>
+    </nav>
+    <div class="container" style="padding:5px;">
+      	<textarea name="styled-textarea" id="editor" placeholder="Type out here..." ></textarea>
+
+		<table id="usersonline"><tr>
+		<p id="lastupdated"></p>
+		
+	</div>
+	
+    </div> <!-- /container -->    
+	
+
+
+<div id="newuser" class="modalDialog">
+	<div>
+		<div class="form">
+		<h2 class="title">Join Scraping!</h2>
+
+        <input class="userInput"id="user_join_id" type="text" maxlength="14" placeholder="Whats your nickname"/>
+		<a href="#newuser"><button class="button" id="scrapjoin" type="submit" >Add me!</button></a>
+	</div>
+
+	</div>
+</div>
+	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
+    <script>
+	  
+	  $(location).attr('href','#newuser');
+	  document.getElementById("user_join_id").focus();
+	  var docname=document.URL;
+	  var docname=docname.substring(docname.lastIndexOf("/")+1,docname.lastIndexOf("#"));
+	  
+	  docdata=
+	  {
+		docname,
+		doctext:"",
+		users:[],
+		cursor:[],
+		numberofusers:0
+	  }; //contains docname , doctext , users[] , no. of users 
+	
+	  //defining socket variable
+	  var socket = io();    
+	  
+	  //initianing join process
+	  $("#scrapjoin").click(function()
+	  {
+		 docdata.users[0]=($('#user_join_id').val()); //id of user joining
+		 docdata.docname=docname;
+		 var socket = io.connect(); //connecting to socket 
+		 socket.emit('join', docdata); //emitting the request
+		 document.getElementById("newuser").style.display="none"; //closing the modal
+	  });
+	  
+	  //on creation of doc
+	  socket.on('allupdate', function(data)
+	  {
+		var i=0;
+		$('#usersonline').html("");
+		for(i=0;i<data.users.length;i++)
+		{
+			$('#usersonline').append(('<td><div class="users logged" onmouseover="this.innerHTML=\''+data.users[i]+'\'" onmouseout="this.innerHTML=\''+data.users[i][0].toUpperCase()+'\'" id='+notoname(i%6)+'>'+data.users[i][0].toUpperCase() ));
+		}
+		$('#usersonline').append($('</tr><table>'));
+		$('#editor').val(data.doctext);
+		docdata.doctext=data.doctext;
+		
+	  });
+		
+	  //on joining of a new member
+	  socket.on('anewuserjoin', function(data)
+	  {
+		var tempobject=JSON.stringify(data);
+		docdata=JSON.parse(tempobject);
+		console.log("docname is/"+data.docname);
+		socket.emit('updateall', data);
+		setInterval(function()
+	  {
+		socket.emit('updatedatabase', docdata);
+	  }, 60000);
+	  });
+      
+	  //Editor data transfer
+	  //on typing something in editor this updates other docs
+	  $("#editor").keyup(function()
+	  {
+		docdata.doctext= $('#editor').val();
+		var val = $('#editor').val();
+       // cursor=val.slice((0, val.selectionStart).length);
+		console.log(docdata.users);
+        socket.emit('texttype', docdata);
+		return false;
+      });
+	  
+	  //when someone else edits the doc
+	  socket.on('texttype', function(data)
+	  {
+		$('#editor').val(data.doctext);
+	  });
+	  
+
+	  socket.on('databaseupdated', function(data)
+	  {
+		var d = new Date();
+		$("#lastupdated").html("Document last saved : "+d);
+		
+	  });
+		
+	
+	function notoname(i)
+	{
+		if (i==0)
+		{
+			return "one";
+		}
+		if (i==1)
+		{
+			return "two";
+		}
+		if (i==2)
+		{
+			return "three";
+		}
+		if (i==3)
+		{
+			return "four";
+		}
+		if (i==4)
+		{
+			return "five";
+		}
+		if (i==5)
+		{
+			return "six";
+		}
+	}
+
+	</script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+	<script src="/js/vendor/bootstrap.min.js"></script>
+	<script src="/js/main.js"></script>
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
